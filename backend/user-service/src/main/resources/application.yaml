@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: user-service
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  profiles:
+    active: ${SPRING_ACTIVE_PROFILES:test}
+
