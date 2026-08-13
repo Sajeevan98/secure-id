@@ -1,4 +1,4 @@
-package com.sajee.auth.security;
+package com.sajee.auth.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

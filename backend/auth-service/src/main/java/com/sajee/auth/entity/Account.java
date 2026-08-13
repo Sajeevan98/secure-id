@@ -2,15 +2,18 @@ package com.sajee.auth.entity;
 
 import com.sajee.auth.common.persistence.AuditableEntity;
 import com.sajee.auth.enums.AccountStatus;
+import com.sajee.auth.security.login.LoginSecurityPolicy;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Slf4j
 @Entity
 @Table(
         name = "users",
@@ -57,4 +60,55 @@ public class Account extends AuditableEntity {
 
     @Column(name = "locked_until")
     private Instant lockedUntil;
+
+
+    // =============== Helper methods for Login-State ===============
+    public boolean isLocked() {
+
+        if (status != AccountStatus.LOCKED) {
+            return false;
+        }
+
+        if (lockedUntil == null) {
+            return true;
+        }
+        return Instant.now().isBefore(lockedUntil);
+    }
+
+    public boolean isLockExpired() {
+        return status == AccountStatus.LOCKED
+                && lockedUntil != null
+                && !Instant.now().isBefore(lockedUntil);
+    }
+
+    public void unlockIfLockExpired() {
+
+        if (!isLockExpired()) {
+            return;
+        }
+        status = AccountStatus.ACTIVE;
+        failedLoginAttempts = 0;
+        lockedUntil = null;
+    }
+
+    public boolean isDisabled() {
+        return status == AccountStatus.DISABLED;
+    }
+
+    public void recordFailedLoginAttempt() {
+        failedLoginAttempts++;
+
+        log.debug("Failed login attempts: {}", failedLoginAttempts);
+
+        if (failedLoginAttempts >= LoginSecurityPolicy.MAX_FAILED_ATTEMPTS) {
+            status = AccountStatus.LOCKED;
+            lockedUntil = Instant.now().plus(LoginSecurityPolicy.LOCK_DURATION);
+        }
+    }
+
+    public void recordSuccessfulLogin() {
+        failedLoginAttempts = 0;
+        lockedUntil = null;
+        log.debug("Login attempts reset: {}", failedLoginAttempts);
+    }
 }
