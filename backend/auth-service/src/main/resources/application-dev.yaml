@@ -9,7 +9,7 @@ server:
 
 logging:
   level:
-    com.sajee.auth: DEBUG
+    com.sajee.auth: DEBUG 
 
 management:
   endpoints:
