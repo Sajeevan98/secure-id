@@ -80,7 +80,7 @@ public class AccountRegistrationServiceTest {
 
         assertThatThrownBy(() -> accountService.register(registerRequest))
                 .isInstanceOf(ConflictException.class)
-                .hasMessage("AUTH_USERNAME_ALREADY_EXISTS");
+                .hasMessage("An account with this username already exists");
 
         verify(accountRepository, never())
                 .save(any(Account.class));
@@ -102,7 +102,7 @@ public class AccountRegistrationServiceTest {
 
         assertThatThrownBy(() -> accountService.register(registerRequest))
                 .isInstanceOf(ConflictException.class)
-                .hasMessage("AUTH_EMAIL_ALREADY_EXISTS");
+                .hasMessage("An account with this email already exists");
 
         verify(accountRepository, never())
                 .save(any(Account.class));

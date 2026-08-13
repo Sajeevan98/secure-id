@@ -91,4 +91,28 @@ public class GlobalExceptionHandler {
                 .body(ApiErrorResponse.of(error));
     }
 
+    // Handles authentication failures
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthentication(AuthenticationException exception, HttpServletRequest request) {
+
+        HttpStatus status = switch (exception.getCode()) {
+
+            case "AUTH_ACCOUNT_LOCKED" -> HttpStatus.LOCKED;
+
+            case "AUTH_ACCOUNT_DISABLED" -> HttpStatus.FORBIDDEN;
+
+            default -> HttpStatus.UNAUTHORIZED;
+        };
+
+        ApiError error = new ApiError(
+                exception.getCode(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+
+        return ResponseEntity
+                .status(status)
+                .body(ApiErrorResponse.of(error));
+    }
 }
