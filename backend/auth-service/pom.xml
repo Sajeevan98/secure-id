@@ -117,6 +117,12 @@
             <scope>test</scope>
         </dependency>
 
+        <!--  For JWT implementation -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-jose</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

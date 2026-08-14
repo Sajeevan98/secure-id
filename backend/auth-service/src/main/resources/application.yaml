@@ -13,3 +13,10 @@ spring:
 
   profiles:
     active: ${SPRING_ACTIVE_PROFILES:test}
+
+
+secureid:
+  jwt:
+    issuer: ${JWT_ISSUER}
+    audience: ${JWT_AUDIENCE}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL}
