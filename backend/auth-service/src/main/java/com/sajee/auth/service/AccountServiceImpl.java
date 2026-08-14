@@ -8,6 +8,8 @@ import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RegisterResponse;
 import com.sajee.auth.entity.Account;
 import com.sajee.auth.repository.AccountRepository;
+import com.sajee.auth.security.jwt.JwtToken;
+import com.sajee.auth.security.jwt.JwtTokenService;
 import com.sajee.auth.security.login.LoginAttemptService;
 import com.sajee.auth.security.login.PasswordService;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +30,10 @@ public class AccountServiceImpl implements AccountService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordService passwordService;
     private final LoginAttemptService loginAttemptService;
+    private final JwtTokenService jwtTokenService;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
-
-        log.debug("Received registration request for {}", request.email());
 
         String username = request.username().trim().toLowerCase(Locale.ROOT);
         String email = normalizeEmail(request.email());
@@ -66,8 +67,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public LoginResponse login(LoginRequest request) {
 
-        log.debug("Received login request for {}", request.email());
-
         String email = normalizeEmail(request.email());
 
         Account account = accountRepository.findByEmail(email)
@@ -76,12 +75,12 @@ public class AccountServiceImpl implements AccountService {
         account.unlockIfLockExpired();
 
         if (account.isDisabled()) {
-            log.debug(email, "{} account is disabled.");
+            log.debug("{} account is disabled.", email);
             throw new AuthenticationException("AUTH_ACCOUNT_DISABLED", "Account is disabled.");
         }
 
         if (account.isLocked()) {
-            log.debug(email, " {} account is temporarily locked.");
+            log.debug("{} account is temporarily locked.", email);
             throw new AuthenticationException("AUTH_ACCOUNT_LOCKED", "Account is temporarily locked.");
         }
 
@@ -97,7 +96,9 @@ public class AccountServiceImpl implements AccountService {
 
         loginAttemptService.recordSuccessfulLogin(account.getUuid());
 
-        return LoginResponse.from(account);
+        JwtToken accessToken = jwtTokenService.generateAccessToken(account);
+
+        return LoginResponse.from(accessToken);
     }
 
     // ========== Helper Methods ==========

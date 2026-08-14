@@ -1,23 +1,19 @@
 package com.sajee.auth.dto.response;
 
-import com.sajee.auth.entity.Account;
-
-import java.util.UUID;
+import com.sajee.auth.security.jwt.JwtToken;
 
 public record LoginResponse(
-
-        UUID uuid,
-        String username,
-        String email,
-        String status
+        String accessToken,
+        String tokenType,
+        long expiresIn
 ) {
 
-    public static LoginResponse from(Account account) {
+    public static LoginResponse from(JwtToken token) {
+
         return new LoginResponse(
-                account.getUuid(),
-                account.getUsername(),
-                account.getEmail(),
-                account.getStatus().name()
+                token.value(),
+                "Bearer",
+                token.expiresInSeconds()
         );
     }
 }

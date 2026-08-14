@@ -15,8 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.UUID;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,10 +44,9 @@ public class AuthControllerTest {
         );
 
         LoginResponse response = new LoginResponse(
-                UUID.randomUUID(),
-                "sajeevan",
-                "sajeevan@example.com",
-                "ACTIVE"
+                "mock-access-token",
+                "Bearer",
+                900
         );
 
         when(accountService.login(any(LoginRequest.class)))
@@ -63,12 +60,12 @@ public class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success")
                         .value(true))
-                .andExpect(jsonPath("$.data.username")
-                        .value("sajeevan"))
-                .andExpect(jsonPath("$.data.email")
-                        .value("sajeevan@example.com"))
-                .andExpect(jsonPath("$.data.status")
-                        .value("ACTIVE"));
+                .andExpect(jsonPath("$.data.accessToken")
+                        .value("mock-access-token"))
+                .andExpect(jsonPath("$.data.tokenType")
+                        .value("Bearer"))
+                .andExpect(jsonPath("$.data.expiresIn")
+                        .value(900));
     }
 
     // Invalid credentials
