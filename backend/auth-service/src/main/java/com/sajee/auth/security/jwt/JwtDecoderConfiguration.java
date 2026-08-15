@@ -15,23 +15,25 @@ public class JwtDecoderConfiguration {
 
     private final JwtProperties jwtProperties;
 
-    // Verify the signature with issuer, audience, expiration
+    // Decode JWT, verify signature, and validate issuer/audience
     @Bean
     public JwtDecoder jwtDecoder(RSAPublicKey publicKey) {
 
-        // signature
+        // Decode & verify signature
         NimbusJwtDecoder decoder = NimbusJwtDecoder
                 .withPublicKey(publicKey)
                 .build();
 
-        // exp, nbf, iss
+        // Accept the JWT only if 'iss' claim matches 'jwtProperties.issuer()'
+        // Not only validate iss, includes the default validators, such as exp, nbf, etc.
         OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators
                 .createDefaultWithIssuer(jwtProperties.issuer());
 
-        // aud
+        // Accept the JWT only if 'aud' claim matches 'jwtProperties.audience()'
         OAuth2TokenValidator<Jwt> audienceValidator =
                 new JwtAudienceValidator(jwtProperties.audience());
 
+        // Combines validators.
         OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
                 issuerValidator,
                 audienceValidator

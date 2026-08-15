@@ -2,7 +2,6 @@ package com.sajee.auth.controller;
 
 import com.sajee.auth.common.api.ApiEndpoints;
 import com.sajee.auth.common.api.ApiResponse;
-import com.sajee.auth.entity.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

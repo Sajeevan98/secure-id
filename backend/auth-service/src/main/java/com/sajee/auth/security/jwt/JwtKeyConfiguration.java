@@ -2,10 +2,7 @@ package com.sajee.auth.security.jwt;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.*;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -49,7 +46,11 @@ public class JwtKeyConfiguration {
                 .build();
     }
 
-    // Verify the signature only
+    // decode: sub, aud, iss, exp, iat, jti, username
+    // But verify only signature. Not iss, aud.
+    // If it has a valid signature made with corresponding private key, the decoder can successfully decode it.
+    // So, Create separate configuration for 'JwtDecoderConfiguration'.
+
 //    @Bean
 //    public JwtDecoder jwtDecoder(RSAPublicKey publicKey) {
 //
@@ -57,5 +58,4 @@ public class JwtKeyConfiguration {
 //                .withPublicKey(publicKey)
 //                .build();
 //    }
-
 }
