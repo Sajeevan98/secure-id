@@ -1,5 +1,7 @@
 package com.sajee.auth.security.config;
 
+import com.sajee.auth.security.handler.RestAccessDeniedHandler;
+import com.sajee.auth.security.handler.RestAuthenticationEntryPoint;
 import com.sajee.auth.security.jwt.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,6 +18,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -31,8 +36,16 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest().authenticated()
                 )
+
+                .exceptionHandling(exception -> exception
+                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(authenticationEntryPoint)
+
+                )
                 .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(jwtConfigurer -> {
+                        oauth2
+                                .authenticationEntryPoint(authenticationEntryPoint)
+                                .jwt(jwtConfigurer -> {
                         })
                 );
         return http.build();
