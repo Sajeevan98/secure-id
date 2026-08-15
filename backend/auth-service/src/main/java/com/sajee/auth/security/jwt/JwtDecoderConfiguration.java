@@ -15,7 +15,7 @@ public class JwtDecoderConfiguration {
 
     private final JwtProperties jwtProperties;
 
-    // Decode JWT, verify signature, and validate issuer/audience
+    // Decode JWT, verify RS256 signature, and validate issuer/audience
     @Bean
     public JwtDecoder jwtDecoder(RSAPublicKey publicKey) {
 
