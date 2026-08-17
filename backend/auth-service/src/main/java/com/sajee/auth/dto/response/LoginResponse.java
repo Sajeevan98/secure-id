@@ -1,19 +1,22 @@
 package com.sajee.auth.dto.response;
 
 import com.sajee.auth.security.jwt.JwtToken;
+import com.sajee.auth.security.refresh.GenerateRefreshTokenResponse;
 
 public record LoginResponse(
         String accessToken,
+        String refreshToken,
         String tokenType,
         long expiresIn
 ) {
 
-    public static LoginResponse from(JwtToken token) {
+    public static LoginResponse from(JwtToken accessToken, GenerateRefreshTokenResponse refreshToken) {
 
         return new LoginResponse(
-                token.value(),
+                accessToken.value(),
+                refreshToken.token(),
                 "Bearer",
-                token.expiresInSeconds()
+                accessToken.expiresInSeconds()
         );
     }
 }

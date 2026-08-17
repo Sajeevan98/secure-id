@@ -12,6 +12,8 @@ import com.sajee.auth.security.jwt.JwtToken;
 import com.sajee.auth.security.jwt.JwtTokenService;
 import com.sajee.auth.security.login.LoginAttemptService;
 import com.sajee.auth.security.login.PasswordService;
+import com.sajee.auth.security.refresh.GenerateRefreshTokenResponse;
+import com.sajee.auth.security.refresh.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,7 @@ public class AccountServiceImpl implements AccountService {
     private final PasswordService passwordService;
     private final LoginAttemptService loginAttemptService;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -65,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request, String ipAddress, String userAgent) {
 
         String email = normalizeEmail(request.email());
 
@@ -98,7 +101,10 @@ public class AccountServiceImpl implements AccountService {
 
         JwtToken accessToken = jwtTokenService.generateAccessToken(account);
 
-        return LoginResponse.from(accessToken);
+        GenerateRefreshTokenResponse refreshToken = refreshTokenService
+                .create(account, ipAddress, userAgent);
+
+        return LoginResponse.from(accessToken, refreshToken);
     }
 
     // ========== Helper Methods ==========
