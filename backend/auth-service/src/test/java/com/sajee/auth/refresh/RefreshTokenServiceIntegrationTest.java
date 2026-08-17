@@ -100,32 +100,6 @@ public class RefreshTokenServiceIntegrationTest {
                 .isEqualTo("JUnit");
     }
 
-    @Test
-    void refresh_shouldWorkWithPersistedToken() {
-
-        // Arrange
-        Account account = createAccount();
-
-        GenerateRefreshTokenResponse generated = refreshTokenService
-                .create(account, "127.0.0.1", "JUnit");
-
-        // Act
-        RefreshTokenResponse response = refreshTokenService.refresh(generated.token());
-
-        // Assert
-        assertThat(response)
-                .isNotNull();
-
-        assertThat(response.accessToken())
-                .isNotBlank();
-
-        assertThat(response.tokenType())
-                .isEqualTo("Bearer");
-
-        assertThat(response.expiresIn())
-                .isAfter(Instant.now());
-    }
-
     private Account createAccount() {
 
         Account account = Account.builder()

@@ -1,15 +1,18 @@
 package com.sajee.auth.entity;
 
 import com.sajee.auth.common.persistence.AuditableEntity;
+import com.sajee.auth.enums.RefreshTokenRevocationReason;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Slf4j
 @Entity
 @Table(
         name = "refresh_tokens",
@@ -56,14 +59,18 @@ public class RefreshToken extends AuditableEntity {
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
 
-    @Column(name = "revoked_at")
-    private Instant revokedAt;
-
     @Column(name = "created_ip", length = 45)
     private String createdIp;
 
     @Column(name = "user_agent", length = 1000)
     private String userAgent;
+
+    @Column(name = "revoked_at")
+    private Instant revokedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "revocation_reason", length = 30)
+    private RefreshTokenRevocationReason revocationReason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -72,9 +79,12 @@ public class RefreshToken extends AuditableEntity {
     )
     private RefreshToken replacedByToken;
 
+    @Column(name = "family_id", nullable = false)
+    private UUID familyId;
+
 
     public boolean isExpired() {
-        return Instant.now().isAfter(expiresAt);
+        return !Instant.now().isBefore(expiresAt);
     }
 
     public boolean isRevoked() {
@@ -85,14 +95,21 @@ public class RefreshToken extends AuditableEntity {
         return !isExpired() && !isRevoked();
     }
 
-    public void revoke() {
-        if (revokedAt == null) {
-            revokedAt = Instant.now();
+    public void revoke(RefreshTokenRevocationReason reason) {
+
+        if (revokedAt != null) {
+            return;
         }
+
+        log.debug("refresh token is revoked.");
+        revokedAt = Instant.now();
+        revocationReason = reason;
     }
 
-    public void replaceWith(RefreshToken replacement) {
-        this.revokedAt = Instant.now();
+    public void markReplacedBy(RefreshToken replacement) {
+
+        log.debug("refresh token is replaced.");
         this.replacedByToken = replacement;
+        revoke(RefreshTokenRevocationReason.ROTATED);
     }
 }

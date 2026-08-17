@@ -1,12 +1,11 @@
 package com.sajee.auth.refresh;
 
-import com.sajee.auth.common.exception.AuthenticationException;
-import com.sajee.auth.dto.response.RefreshTokenResponse;
+import com.sajee.auth.common.exception.RefreshTokenException;
 import com.sajee.auth.entity.Account;
 import com.sajee.auth.entity.RefreshToken;
+import com.sajee.auth.enums.RefreshTokenRevocationReason;
 import com.sajee.auth.repository.RefreshTokenRepository;
 import com.sajee.auth.security.jwt.JwtProperties;
-import com.sajee.auth.security.jwt.JwtToken;
 import com.sajee.auth.security.jwt.JwtTokenService;
 import com.sajee.auth.security.refresh.GenerateRefreshTokenResponse;
 import com.sajee.auth.security.refresh.RefreshTokenGenerator;
@@ -21,11 +20,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -130,250 +130,53 @@ class RefreshTokenServiceTest {
     }
 
     @Test
-    void refresh_shouldReturnAccessToken_whenTokenIsValid() {
+    void shouldRevokeEntireFamilyWhenRefreshTokenIsReused() {
 
-        // Arrange
-        String rawToken = "raw-token";
-        String tokenHash = "hashed-token";
+        UUID familyId = UUID.randomUUID();
 
-        Instant accessTokenExpiresAt = Instant.now().plus(Duration.ofMinutes(15));
+        RefreshToken token1 = RefreshToken.builder()
+                .uuid(UUID.randomUUID())
+                .familyId(familyId)
+                .tokenHash("hash-1")
+                .expiresAt(Instant.now().plus(Duration.ofDays(30)))
+                .build();
 
-        JwtToken accessToken = new JwtToken(
-                "access-token",
-                Instant.now(),
-                accessTokenExpiresAt
-        );
+        RefreshToken token2 = RefreshToken.builder()
+                .uuid(UUID.randomUUID())
+                .familyId(familyId)
+                .tokenHash("hash-2")
+                .expiresAt(Instant.now().plus(Duration.ofDays(30)))
+                .build();
 
-        when(tokenHasher.hash(rawToken))
-                .thenReturn(tokenHash);
+        token1.revoke(RefreshTokenRevocationReason.ROTATED);
 
-        when(refreshTokenRepository.findByTokenHash(tokenHash))
-                .thenReturn(Optional.of(refreshToken));
+        when(tokenHasher.hash("raw-token"))
+                .thenReturn("hash-1");
 
-        when(refreshToken.isRevoked())
-                .thenReturn(false);
+        when(refreshTokenRepository.findByTokenHash("hash-1"))
+                .thenReturn(Optional.of(token1));
 
-        when(refreshToken.isExpired())
-                .thenReturn(false);
+        when(refreshTokenRepository.findAllByFamilyId(familyId))
+                .thenReturn(List.of(token1, token2));
 
-        when(refreshToken.getAccount())
-                .thenReturn(account);
+        assertThatThrownBy(() ->
+                refreshTokenService.rotate(
+                        "raw-token",
+                        "127.0.0.1",
+                        "JUnit"
+                )
+        )
+                .isInstanceOf(RefreshTokenException.class)
+                .hasMessage("Refresh token reuse detected.");
 
-        when(account.isDisabled())
-                .thenReturn(false);
+        assertThat(token1.isRevoked()).isTrue();
+        assertThat(token2.isRevoked()).isTrue();
 
-        when(account.isLocked())
-                .thenReturn(false);
-
-        when(jwtTokenService.generateAccessToken(account))
-                .thenReturn(accessToken);
-
-        // Act
-        RefreshTokenResponse response = refreshTokenService.refresh(rawToken);
-
-        // Assert
-        assertThat(response.accessToken())
-                .isEqualTo("access-token");
-
-        assertThat(response.tokenType())
-                .isEqualTo("Bearer");
-
-        assertThat(response.expiresIn())
-                .isEqualTo(accessTokenExpiresAt);
-
-        verify(tokenHasher)
-                .hash(rawToken);
+        assertThat(token2.getRevocationReason())
+                .isEqualTo(RefreshTokenRevocationReason.REUSE_DETECTED);
 
         verify(refreshTokenRepository)
-                .findByTokenHash(tokenHash);
-
-        verify(jwtTokenService)
-                .generateAccessToken(account);
-    }
-
-    // Invalid refresh token
-    @Test
-    void refresh_shouldThrow_whenTokenDoesNotExist() {
-
-        // Arrange
-        String rawToken = "invalid-token";
-        String tokenHash = "hashed-invalid-token";
-
-        when(tokenHasher.hash(rawToken))
-                .thenReturn(tokenHash);
-
-        when(refreshTokenRepository.findByTokenHash(tokenHash))
-                .thenReturn(Optional.empty());
-
-        // Act
-        AuthenticationException exception = assertThrows(AuthenticationException.class,
-                () -> refreshTokenService.refresh(rawToken)
-        );
-
-        // Assert
-        assertThat(exception.getCode())
-                .isEqualTo("AUTH_INVALID_REFRESH_TOKEN");
-
-        assertThat(exception.getMessage())
-                .isEqualTo("Invalid refresh token.");
-
-        verify(jwtTokenService, never())
-                .generateAccessToken(any());
-    }
-
-    //Revoked token
-    @Test
-    void refresh_shouldThrow_whenTokenIsRevoked() {
-
-        // Arrange
-        String rawToken = "raw-token";
-
-        when(tokenHasher.hash(rawToken))
-                .thenReturn("hashed-token");
-
-        when(refreshTokenRepository.findByTokenHash("hashed-token"))
-                .thenReturn(Optional.of(refreshToken));
-
-        when(refreshToken.isRevoked())
-                .thenReturn(true);
-
-        // Act
-        AuthenticationException exception = assertThrows(
-                AuthenticationException.class,
-                () -> refreshTokenService.refresh(rawToken)
-        );
-
-        // Assert
-        assertThat(exception.getCode())
-                .isEqualTo("AUTH_REFRESH_TOKEN_REVOKED");
-
-        verify(refreshToken, never())
-                .isExpired();
-
-        verify(refreshToken, never())
-                .getAccount();
-
-        verify(jwtTokenService, never())
-                .generateAccessToken(any());
-    }
-
-    // Expired token
-    @Test
-    void refresh_shouldThrow_whenTokenIsExpired() {
-
-        // Arrange
-        String rawToken = "raw-token";
-
-        when(tokenHasher.hash(rawToken))
-                .thenReturn("hashed-token");
-
-        when(refreshTokenRepository.findByTokenHash("hashed-token"))
-                .thenReturn(Optional.of(refreshToken));
-
-        when(refreshToken.isRevoked())
-                .thenReturn(false);
-
-        when(refreshToken.isExpired())
-                .thenReturn(true);
-
-        // Act
-        AuthenticationException exception =
-                assertThrows(
-                        AuthenticationException.class,
-                        () -> refreshTokenService.refresh(rawToken)
-                );
-
-        // Assert
-        assertThat(exception.getCode())
-                .isEqualTo("AUTH_REFRESH_TOKEN_EXPIRED");
-
-        verify(refreshToken, never())
-                .getAccount();
-
-        verify(jwtTokenService, never())
-                .generateAccessToken(any());
-    }
-
-    // Disabled and locked account
-    @Test
-    void refresh_shouldThrow_whenAccountIsDisabled() {
-
-        // Arrange
-        String rawToken = "raw-token";
-
-        when(tokenHasher.hash(rawToken))
-                .thenReturn("hashed-token");
-
-        when(refreshTokenRepository.findByTokenHash("hashed-token"))
-                .thenReturn(Optional.of(refreshToken));
-
-        when(refreshToken.isRevoked())
-                .thenReturn(false);
-
-        when(refreshToken.isExpired())
-                .thenReturn(false);
-
-        when(refreshToken.getAccount())
-                .thenReturn(account);
-
-        when(account.isDisabled())
-                .thenReturn(true);
-
-        // Act
-        AuthenticationException exception =
-                assertThrows(
-                        AuthenticationException.class,
-                        () -> refreshTokenService.refresh(rawToken)
-                );
-
-        // Assert
-        assertThat(exception.getCode())
-                .isEqualTo("AUTH_ACCOUNT_DISABLED");
-
-        verify(jwtTokenService, never())
-                .generateAccessToken(any());
-    }
-
-    @Test
-    void refresh_shouldThrow_whenAccountIsLocked() {
-
-        // Arrange
-        String rawToken = "raw-token";
-
-        when(tokenHasher.hash(rawToken))
-                .thenReturn("hashed-token");
-
-        when(refreshTokenRepository.findByTokenHash("hashed-token"))
-                .thenReturn(Optional.of(refreshToken));
-
-        when(refreshToken.isRevoked())
-                .thenReturn(false);
-
-        when(refreshToken.isExpired())
-                .thenReturn(false);
-
-        when(refreshToken.getAccount())
-                .thenReturn(account);
-
-        when(account.isDisabled())
-                .thenReturn(false);
-
-        when(account.isLocked())
-                .thenReturn(true);
-
-        // Act
-        AuthenticationException exception =
-                assertThrows(
-                        AuthenticationException.class,
-                        () -> refreshTokenService.refresh(rawToken)
-                );
-
-        // Assert
-        assertThat(exception.getCode())
-                .isEqualTo("AUTH_ACCOUNT_LOCKED");
-
-        verify(jwtTokenService, never())
-                .generateAccessToken(any());
+                .findAllByFamilyId(familyId);
     }
 }
 

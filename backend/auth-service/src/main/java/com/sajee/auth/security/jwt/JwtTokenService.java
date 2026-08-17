@@ -2,6 +2,7 @@ package com.sajee.auth.security.jwt;
 
 import com.sajee.auth.entity.Account;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -11,6 +12,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtTokenService {
@@ -39,6 +41,7 @@ public class JwtTokenService {
                 .encode(JwtEncoderParameters.from(claims))
                 .getTokenValue();
 
+        log.debug("Access token created.");
         return new JwtToken(
                 tokenValue,
                 issuedAt,

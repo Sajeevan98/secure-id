@@ -16,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,6 +62,7 @@ public class RefreshTokenRepositoryIntegrationTest {
                 .account(savedAccount)
                 .tokenHash("abcdef123456")
                 .expiresAt(Instant.now().plusSeconds(3600))
+                .familyId(UUID.randomUUID())
                 .build();
 
         refreshTokenRepository.saveAndFlush(token);
