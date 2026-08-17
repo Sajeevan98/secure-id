@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public record RefreshTokenResponse(
         String accessToken,
+        String refreshToken,
         String tokenType,
         Instant expiresIn
 ) {

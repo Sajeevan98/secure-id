@@ -1,64 +1,110 @@
 package com.sajee.auth.refresh;
 
-import com.sajee.auth.entity.Account;
 import com.sajee.auth.entity.RefreshToken;
+import com.sajee.auth.enums.RefreshTokenRevocationReason;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RefreshTokenTest {
 
-    Account account = Account.builder()
-            .username("sajeevan")
-            .email("sajeevan@example.com")
-            .passwordHash("hash-password")
-            .build();
-
-    // Active
     @Test
-    void shouldIdentifyActiveToken() {
-
+    void shouldBeActiveWhenNotExpiredAndNotRevoked() {
         RefreshToken token = RefreshToken.builder()
-                .account(account)
-                .tokenHash("hash")
-                .expiresAt(Instant.now().plusSeconds(3600))
+                .expiresAt(Instant.now().plusSeconds(60))
                 .build();
 
-        assertThat(token.isExpired()).isFalse();
-        assertThat(token.isRevoked()).isFalse();
-        assertThat(token.isActive()).isTrue();
+        assertTrue(token.isActive());
+        assertFalse(token.isExpired());
+        assertFalse(token.isRevoked());
     }
 
-    // Expired
     @Test
-    void shouldIdentifyExpiredToken() {
-
+    void shouldBeExpiredWhenExpirationTimeIsInThePast() {
         RefreshToken token = RefreshToken.builder()
-                .account(account)
-                .tokenHash("hash")
-                .expiresAt(Instant.now().minusSeconds(1))
+                .expiresAt(Instant.now().minusSeconds(60))
                 .build();
 
-        assertThat(token.isExpired()).isTrue();
-        assertThat(token.isActive()).isFalse();
+        assertTrue(token.isExpired());
+        assertFalse(token.isActive());
     }
 
-    // Revoked
     @Test
-    void shouldIdentifyRevokedToken() {
+    void shouldBeExpiredWhenExpirationTimeIsNow() {
+        Instant expiresAt = Instant.now();
 
         RefreshToken token = RefreshToken.builder()
-                .account(account)
-                .tokenHash("hash")
-                .expiresAt(Instant.now().plusSeconds(3600))
+                .expiresAt(expiresAt)
                 .build();
 
-        token.revoke();
+        assertTrue(token.isExpired());
+        assertFalse(token.isActive());
+    }
 
-        assertThat(token.isRevoked()).isTrue();
-        assertThat(token.isActive()).isFalse();
-        assertThat(token.getRevokedAt()).isNotNull();
+    @Test
+    void shouldBeRevokedAfterRevoke() {
+        RefreshToken token = RefreshToken.builder()
+                .expiresAt(Instant.now().plusSeconds(60))
+                .build();
+
+        token.revoke(RefreshTokenRevocationReason.LOGOUT);
+
+        assertTrue(token.isRevoked());
+        assertFalse(token.isActive());
+        assertNotNull(token.getRevokedAt());
+        assertEquals(
+                RefreshTokenRevocationReason.LOGOUT,
+                token.getRevocationReason()
+        );
+    }
+
+    @Test
+    void shouldNotChangeRevocationWhenAlreadyRevoked() {
+        RefreshToken token = RefreshToken.builder()
+                .expiresAt(Instant.now().plusSeconds(60))
+                .build();
+
+        token.revoke(RefreshTokenRevocationReason.LOGOUT);
+        Instant firstRevokedAt = token.getRevokedAt();
+
+        token.revoke(RefreshTokenRevocationReason.ADMIN_REVOKED);
+
+        assertEquals(firstRevokedAt, token.getRevokedAt());
+        assertEquals(
+                RefreshTokenRevocationReason.LOGOUT,
+                token.getRevocationReason()
+        );
+    }
+
+    @Test
+    void shouldMarkTokenAsReplaced() {
+        RefreshToken original = RefreshToken.builder()
+                .expiresAt(Instant.now().plusSeconds(60))
+                .build();
+
+        RefreshToken replacement = RefreshToken.builder()
+                .expiresAt(Instant.now().plusSeconds(120))
+                .build();
+
+        original.markReplacedBy(replacement);
+
+        assertSame(replacement, original.getReplacedByToken());
+        assertTrue(original.isRevoked());
+        assertFalse(original.isActive());
+        assertEquals(
+                RefreshTokenRevocationReason.ROTATED,
+                original.getRevocationReason()
+        );
+    }
+
+    @Test
+    void shouldGenerateUuidByDefault() {
+        RefreshToken token = RefreshToken.builder()
+                .expiresAt(Instant.now().plusSeconds(60))
+                .build();
+
+        assertNotNull(token.getUuid());
     }
 }
