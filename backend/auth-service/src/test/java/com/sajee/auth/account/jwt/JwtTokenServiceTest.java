@@ -38,7 +38,8 @@ public class JwtTokenServiceTest {
         JwtProperties properties = new JwtProperties(
                 "https://auth.secureid.local",
                 "secureid-api",
-                Duration.ofMinutes(15)
+                Duration.ofMinutes(15),
+                Duration.ofDays(30)
         );
         jwtTokenService = new JwtTokenService(encoder, properties);
     }

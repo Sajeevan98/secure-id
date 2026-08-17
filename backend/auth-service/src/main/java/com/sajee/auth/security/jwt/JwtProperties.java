@@ -9,6 +9,7 @@ public record JwtProperties(
 
         String issuer,
         String audience,
-        Duration accessTokenTtl
+        Duration accessTokenTtl,
+        Duration refreshTokenTtl
 ) {
 }

@@ -39,7 +39,7 @@ public class JwtTokenValidationTest {
                 (RSAPrivateKey) keyPair.getPrivate()
         ).build();
 
-        JwtProperties properties = new JwtProperties(ISSUER, AUDIENCE, Duration.ofMinutes(15));
+        JwtProperties properties = new JwtProperties(ISSUER, AUDIENCE, Duration.ofMinutes(15), Duration.ofDays(30));
 
         tokenService = new JwtTokenService(encoder, properties);
 

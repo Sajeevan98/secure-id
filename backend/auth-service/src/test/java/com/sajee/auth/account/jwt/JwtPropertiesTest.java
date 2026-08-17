@@ -15,7 +15,8 @@ public class JwtPropertiesTest {
         JwtProperties properties = new JwtProperties(
                 "https://auth.secureid.local",
                 "secureid-api",
-                Duration.ofMinutes(15)
+                Duration.ofMinutes(15),
+                Duration.ofDays(30)
         );
 
         assertThat(properties.issuer())
