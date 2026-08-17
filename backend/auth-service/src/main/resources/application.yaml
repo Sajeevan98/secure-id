@@ -20,3 +20,4 @@ secureid:
     issuer: ${JWT_ISSUER}
     audience: ${JWT_AUDIENCE}
     access-token-ttl: ${JWT_ACCESS_TOKEN_TTL}
+    refresh-token-ttl: ${JWT_REFRESH_TOKEN_TTL}
