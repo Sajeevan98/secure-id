@@ -15,7 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,15 +46,20 @@ public class AuthControllerTest {
 
         LoginResponse response = new LoginResponse(
                 "mock-access-token",
+                "mock-refresh-token",
                 "Bearer",
                 900
         );
 
-        when(accountService.login(any(LoginRequest.class)))
-                .thenReturn(response);
+        when(accountService.login(
+                any(LoginRequest.class),
+                anyString(),
+                eq("JUnit")
+        )).thenReturn(response);
 
         mockMvc.perform(
                         post("/api/v1/auth/login")
+                                .header("User-Agent", "JUnit")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -62,10 +68,18 @@ public class AuthControllerTest {
                         .value(true))
                 .andExpect(jsonPath("$.data.accessToken")
                         .value("mock-access-token"))
+                .andExpect(jsonPath("$.data.refreshToken")
+                        .value("mock-refresh-token"))
                 .andExpect(jsonPath("$.data.tokenType")
                         .value("Bearer"))
                 .andExpect(jsonPath("$.data.expiresIn")
                         .value(900));
+
+        verify(accountService).login(
+                any(LoginRequest.class),
+                anyString(),
+                eq("JUnit")
+        );
     }
 
     // Invalid credentials
@@ -77,13 +91,17 @@ public class AuthControllerTest {
                 "WrongPassword123!"
         );
 
-        when(accountService.login(any(LoginRequest.class)))
-                .thenThrow(
-                        new AuthenticationException("AUTH_INVALID_CREDENTIALS", "Invalid email or password.")
-                );
+        when(accountService.login(
+                any(LoginRequest.class),
+                anyString(),
+                eq("JUnit")
+        )).thenThrow(
+                new AuthenticationException("AUTH_INVALID_CREDENTIALS", "Invalid email or password.")
+        );
 
         mockMvc.perform(
                         post("/api/v1/auth/login")
+                                .header("User-Agent", "JUnit")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -107,13 +125,17 @@ public class AuthControllerTest {
                 "StrongPassword123!"
         );
 
-        when(accountService.login(any(LoginRequest.class)))
-                .thenThrow(
-                        new AuthenticationException("AUTH_ACCOUNT_LOCKED", "Account is temporarily locked.")
-                );
+        when(accountService.login(
+                any(LoginRequest.class),
+                anyString(),
+                eq("JUnit")
+        )).thenThrow(
+                new AuthenticationException("AUTH_ACCOUNT_LOCKED", "Account is temporarily locked.")
+        );
 
         mockMvc.perform(
                         post("/api/v1/auth/login")
+                                .header("User-Agent", "JUnit")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -132,13 +154,17 @@ public class AuthControllerTest {
                 "StrongPassword123!"
         );
 
-        when(accountService.login(any(LoginRequest.class)))
-                .thenThrow(
-                        new AuthenticationException("AUTH_ACCOUNT_DISABLED", "Account is disabled.")
-                );
+        when(accountService.login(
+                any(LoginRequest.class),
+                anyString(),
+                eq("JUnit")
+        )).thenThrow(
+                new AuthenticationException("AUTH_ACCOUNT_DISABLED", "Account is disabled.")
+        );
 
         mockMvc.perform(
                         post("/api/v1/auth/login")
+                                .header("User-Agent", "JUnit")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )

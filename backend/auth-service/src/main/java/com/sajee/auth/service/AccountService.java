@@ -9,6 +9,5 @@ public interface AccountService {
 
     RegisterResponse register(RegisterRequest request);
 
-    LoginResponse login(LoginRequest request);
-
+    LoginResponse login(LoginRequest request, String ipAddress, String userAgent);
 }

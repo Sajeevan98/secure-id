@@ -7,6 +7,7 @@ import com.sajee.auth.dto.request.RegisterRequest;
 import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RegisterResponse;
 import com.sajee.auth.service.AccountService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,9 +30,15 @@ public class AuthController {
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResponse<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
 
-        LoginResponse response = accountService.login(request);
+        LoginResponse response = accountService.login(
+                request,
+                httpRequest.getRemoteAddr(),
+                httpRequest.getHeader("User-Agent")
+        );
+
         return ApiResponse.success(response);
     }
 
