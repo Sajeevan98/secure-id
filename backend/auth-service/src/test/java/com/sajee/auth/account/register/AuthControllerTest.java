@@ -4,7 +4,8 @@ import com.sajee.auth.common.exception.GlobalExceptionHandler;
 import com.sajee.auth.controller.AuthController;
 import com.sajee.auth.dto.request.RegisterRequest;
 import com.sajee.auth.dto.response.RegisterResponse;
-import com.sajee.auth.service.AccountServiceImpl;
+import com.sajee.auth.security.refresh.RefreshTokenService;
+import com.sajee.auth.service.AccountService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,7 +34,10 @@ public class AuthControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private AccountServiceImpl accountService;
+    private RefreshTokenService refreshTokenService;
+
+    @MockitoBean
+    private AccountService accountService;
 
     @Test
     void shouldRegisterAccount() throws Exception {

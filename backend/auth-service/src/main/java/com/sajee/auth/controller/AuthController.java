@@ -3,9 +3,12 @@ package com.sajee.auth.controller;
 import com.sajee.auth.common.api.ApiEndpoints;
 import com.sajee.auth.common.api.ApiResponse;
 import com.sajee.auth.dto.request.LoginRequest;
+import com.sajee.auth.dto.request.RefreshTokenRequest;
 import com.sajee.auth.dto.request.RegisterRequest;
 import com.sajee.auth.dto.response.LoginResponse;
+import com.sajee.auth.dto.response.RefreshTokenResponse;
 import com.sajee.auth.dto.response.RegisterResponse;
+import com.sajee.auth.security.refresh.RefreshTokenService;
 import com.sajee.auth.service.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AccountService accountService;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/registration")
     @ResponseStatus(HttpStatus.CREATED)
@@ -42,4 +46,12 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<RefreshTokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+
+        RefreshTokenResponse response = refreshTokenService.refresh(request.refreshToken());
+
+        return ApiResponse.success(response);
+    }
 }
