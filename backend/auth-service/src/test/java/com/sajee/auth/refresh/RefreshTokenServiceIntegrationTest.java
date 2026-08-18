@@ -1,6 +1,5 @@
 package com.sajee.auth.refresh;
 
-import com.sajee.auth.dto.response.RefreshTokenResponse;
 import com.sajee.auth.entity.Account;
 import com.sajee.auth.entity.RefreshToken;
 import com.sajee.auth.repository.AccountRepository;

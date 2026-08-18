@@ -7,10 +7,7 @@ import com.sajee.auth.enums.RefreshTokenRevocationReason;
 import com.sajee.auth.repository.RefreshTokenRepository;
 import com.sajee.auth.security.jwt.JwtProperties;
 import com.sajee.auth.security.jwt.JwtTokenService;
-import com.sajee.auth.security.refresh.GenerateRefreshTokenResponse;
-import com.sajee.auth.security.refresh.RefreshTokenGenerator;
-import com.sajee.auth.security.refresh.RefreshTokenHasher;
-import com.sajee.auth.security.refresh.RefreshTokenService;
+import com.sajee.auth.security.refresh.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,13 +17,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +49,9 @@ class RefreshTokenServiceTest {
 
     @Mock
     private RefreshToken refreshToken;
+
+    @Mock
+    private RefreshTokenFamilyService refreshTokenFamilyService;
 
     @InjectMocks
     private RefreshTokenService refreshTokenService;
@@ -141,13 +141,6 @@ class RefreshTokenServiceTest {
                 .expiresAt(Instant.now().plus(Duration.ofDays(30)))
                 .build();
 
-        RefreshToken token2 = RefreshToken.builder()
-                .uuid(UUID.randomUUID())
-                .familyId(familyId)
-                .tokenHash("hash-2")
-                .expiresAt(Instant.now().plus(Duration.ofDays(30)))
-                .build();
-
         token1.revoke(RefreshTokenRevocationReason.ROTATED);
 
         when(tokenHasher.hash("raw-token"))
@@ -155,9 +148,6 @@ class RefreshTokenServiceTest {
 
         when(refreshTokenRepository.findByTokenHash("hash-1"))
                 .thenReturn(Optional.of(token1));
-
-        when(refreshTokenRepository.findAllByFamilyId(familyId))
-                .thenReturn(List.of(token1, token2));
 
         assertThatThrownBy(() ->
                 refreshTokenService.rotate(
@@ -169,14 +159,75 @@ class RefreshTokenServiceTest {
                 .isInstanceOf(RefreshTokenException.class)
                 .hasMessage("Refresh token reuse detected.");
 
-        assertThat(token1.isRevoked()).isTrue();
-        assertThat(token2.isRevoked()).isTrue();
+        verify(refreshTokenFamilyService)
+                .revokeFamily(familyId);
+    }
 
-        assertThat(token2.getRevocationReason())
-                .isEqualTo(RefreshTokenRevocationReason.REUSE_DETECTED);
 
-        verify(refreshTokenRepository)
-                .findAllByFamilyId(familyId);
+    @Test
+    void shouldRevokeRefreshTokenOnLogout() {
+
+        RefreshToken token = RefreshToken.builder()
+                .uuid(UUID.randomUUID())
+                .familyId(UUID.randomUUID())
+                .tokenHash("hash-1")
+                .expiresAt(Instant.now().plus(Duration.ofDays(30)))
+                .build();
+
+        given(tokenHasher.hash("raw-token"))
+                .willReturn("hash-1");
+
+        given(refreshTokenRepository.findByTokenHash("hash-1"))
+                .willReturn(Optional.of(token));
+
+        refreshTokenService.logout("raw-token");
+
+        assertThat(token.isRevoked())
+                .isTrue();
+
+        assertThat(token.getRevocationReason())
+                .isEqualTo(RefreshTokenRevocationReason.LOGOUT);
+    }
+
+    @Test
+    void shouldRejectInvalidRefreshTokenOnLogout() {
+
+        given(tokenHasher.hash("invalid-token"))
+                .willReturn("unknown-hash");
+
+        given(refreshTokenRepository.findByTokenHash("unknown-hash"))
+                .willReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                refreshTokenService.logout("invalid-token")
+        )
+                .isInstanceOf(RefreshTokenException.class)
+                .hasMessage("Invalid refresh token.");
+    }
+
+    @Test
+    void shouldRejectAlreadyRevokedRefreshTokenOnLogout() {
+
+        RefreshToken token = RefreshToken.builder()
+                .uuid(UUID.randomUUID())
+                .familyId(UUID.randomUUID())
+                .tokenHash("hash-1")
+                .expiresAt(Instant.now().plus(Duration.ofDays(30)))
+                .build();
+
+        token.revoke(RefreshTokenRevocationReason.ROTATED);
+
+        given(tokenHasher.hash("raw-token"))
+                .willReturn("hash-1");
+
+        given(refreshTokenRepository.findByTokenHash("hash-1"))
+                .willReturn(Optional.of(token));
+
+        assertThatThrownBy(() ->
+                refreshTokenService.logout("raw-token")
+        )
+                .isInstanceOf(RefreshTokenException.class)
+                .hasMessage("Refresh token has already been revoked.");
     }
 }
 

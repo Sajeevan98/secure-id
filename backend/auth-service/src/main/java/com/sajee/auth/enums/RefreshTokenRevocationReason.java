@@ -4,5 +4,5 @@ public enum RefreshTokenRevocationReason {
     ROTATED,
     REUSE_DETECTED,
     LOGOUT,
-    ADMIN_REVOKED
+    FAMILY_REVOKED
 }

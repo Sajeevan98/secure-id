@@ -69,7 +69,7 @@ public class RefreshTokenTest {
         token.revoke(RefreshTokenRevocationReason.LOGOUT);
         Instant firstRevokedAt = token.getRevokedAt();
 
-        token.revoke(RefreshTokenRevocationReason.ADMIN_REVOKED);
+        token.revoke(RefreshTokenRevocationReason.FAMILY_REVOKED);
 
         assertEquals(firstRevokedAt, token.getRevokedAt());
         assertEquals(
