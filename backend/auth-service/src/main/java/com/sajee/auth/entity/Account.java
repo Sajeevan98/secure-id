@@ -116,4 +116,8 @@ public class Account extends AuditableEntity {
         lockedUntil = null;
         log.debug("Login attempts reset: {}", failedLoginAttempts);
     }
+
+    public void changeRole(Role role) {
+        this.role = role;
+    }
 }
