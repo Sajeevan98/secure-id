@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -127,5 +126,26 @@ public class RefreshTokenService {
                 "Bearer",
                 accessToken.expiresAt()
         );
+    }
+
+    public void logout(String rawRefreshToken) {
+
+        String tokenHash = tokenHasher.hash(rawRefreshToken);
+
+        RefreshToken refreshToken = refreshTokenRepository
+                .findByTokenHash(tokenHash)
+                .orElseThrow(() -> new RefreshTokenException(
+                        "AUTH_INVALID_REFRESH_TOKEN",
+                        "Invalid refresh token."
+                ));
+
+        if (refreshToken.isRevoked()) {
+            throw new RefreshTokenException(
+                    "AUTH_REFRESH_TOKEN_REVOKED", "Refresh token has already been revoked."
+            );
+        }
+
+        refreshToken.revoke(RefreshTokenRevocationReason.LOGOUT);
+        log.debug("Refresh token {} revoked due to logout.", refreshToken.getUuid());
     }
 }

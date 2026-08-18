@@ -3,6 +3,7 @@ package com.sajee.auth.controller;
 import com.sajee.auth.common.api.ApiEndpoints;
 import com.sajee.auth.common.api.ApiResponse;
 import com.sajee.auth.dto.request.LoginRequest;
+import com.sajee.auth.dto.request.LogoutRequest;
 import com.sajee.auth.dto.request.RegisterRequest;
 import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RefreshTokenResponse;
@@ -56,5 +57,13 @@ public class AuthController {
         );
 
         return ApiResponse.success(response);
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(
+            @Valid @RequestBody LogoutRequest request
+    ) {
+        refreshTokenService.logout(request.refreshToken());
     }
 }
