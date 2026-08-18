@@ -2,6 +2,7 @@ package com.sajee.auth.entity;
 
 import com.sajee.auth.common.persistence.AuditableEntity;
 import com.sajee.auth.enums.AccountStatus;
+import com.sajee.auth.enums.Role;
 import com.sajee.auth.security.login.LoginSecurityPolicy;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -61,6 +62,10 @@ public class Account extends AuditableEntity {
     @Column(name = "locked_until")
     private Instant lockedUntil;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private Role role = Role.USER;
 
     // =============== Helper methods for Login-State ===============
     public boolean isLocked() {

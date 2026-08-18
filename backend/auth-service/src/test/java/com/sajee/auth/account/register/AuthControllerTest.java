@@ -4,6 +4,7 @@ import com.sajee.auth.common.exception.GlobalExceptionHandler;
 import com.sajee.auth.controller.AuthController;
 import com.sajee.auth.dto.request.RegisterRequest;
 import com.sajee.auth.dto.response.RegisterResponse;
+import com.sajee.auth.enums.Role;
 import com.sajee.auth.security.refresh.RefreshTokenService;
 import com.sajee.auth.service.AccountService;
 import org.junit.jupiter.api.Test;
@@ -53,7 +54,8 @@ public class AuthControllerTest {
                 "sajeevan",
                 "sajeevan@example.com",
                 "ACTIVE",
-                false
+                false,
+                Role.USER
         );
 
         when(accountService.register(any(RegisterRequest.class)))
@@ -73,7 +75,9 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.data.status")
                         .value("ACTIVE"))
                 .andExpect(jsonPath("$.data.emailVerified")
-                        .value(false));
+                        .value(false))
+                .andExpect(jsonPath("$.data.role")
+                        .value("USER"));
     }
 
     @Test
