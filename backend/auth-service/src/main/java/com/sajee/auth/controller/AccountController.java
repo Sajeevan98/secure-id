@@ -27,7 +27,9 @@ public class AccountController {
 
         Map<String, Object> account = Map.of(
                 "uuid", jwt.getSubject(),
-                "username", jwt.getClaimAsString("username")
+                "username", jwt.getClaimAsString("username"),
+                "roles", jwt.getClaimAsStringList("roles"),
+                "permissions", jwt.getClaimAsStringList("permissions")
         );
 
         return ApiResponse.success(account);

@@ -1,6 +1,7 @@
 package com.sajee.auth.dto.response;
 
 import com.sajee.auth.entity.Account;
+import com.sajee.auth.enums.Permission;
 import com.sajee.auth.enums.Role;
 
 import java.util.UUID;

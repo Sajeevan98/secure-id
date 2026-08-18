@@ -1,6 +1,7 @@
 package com.sajee.auth.security.jwt;
 
 import com.sajee.auth.entity.Account;
+import com.sajee.auth.security.rbac.RolePermissions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -11,7 +12,9 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,6 +29,12 @@ public class JwtTokenService {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plus(jwtProperties.accessTokenTtl());
 
+        Set<String> permissions = RolePermissions
+                .getPermissions(account.getRole())
+                .stream()
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+
         String tokenId = UUID.randomUUID().toString();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -37,6 +46,7 @@ public class JwtTokenService {
                 .id(tokenId)
                 .claim("username", account.getUsername())
                 .claim("roles", List.of(account.getRole().name()))
+                .claim("permissions", permissions)
                 .build();
 
         String tokenValue = jwtEncoder
