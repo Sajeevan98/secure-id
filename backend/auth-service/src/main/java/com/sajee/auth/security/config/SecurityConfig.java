@@ -2,11 +2,13 @@ package com.sajee.auth.security.config;
 
 import com.sajee.auth.security.handler.RestAccessDeniedHandler;
 import com.sajee.auth.security.handler.RestAuthenticationEntryPoint;
+import com.sajee.auth.security.jwt.JwtAuthenticationConverter;
 import com.sajee.auth.security.jwt.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -45,8 +48,11 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 ->
                         oauth2
                                 .authenticationEntryPoint(authenticationEntryPoint)
-                                .jwt(jwtConfigurer -> {
-                        })
+                                .jwt(jwt ->
+                                        jwt.jwtAuthenticationConverter(
+                                                new JwtAuthenticationConverter()
+                                        )
+                                )
                 );
         return http.build();
     }

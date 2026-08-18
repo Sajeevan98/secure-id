@@ -2,8 +2,10 @@ package com.sajee.auth.controller;
 
 import com.sajee.auth.common.api.ApiEndpoints;
 import com.sajee.auth.common.api.ApiResponse;
+import com.sajee.auth.entity.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import java.util.Map;
 public class AccountController {
 
     @GetMapping("/me")
+    @PreAuthorize("hasRole('USER')")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Map<String, Object>> me(@AuthenticationPrincipal Jwt jwt) {
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -35,6 +36,7 @@ public class JwtTokenService {
                 .expiresAt(expiresAt)
                 .id(tokenId)
                 .claim("username", account.getUsername())
+                .claim("roles", List.of(account.getRole().name()))
                 .build();
 
         String tokenValue = jwtEncoder
