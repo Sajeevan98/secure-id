@@ -1,6 +1,7 @@
 package com.sajee.auth.dto.response;
 
 import com.sajee.auth.entity.Account;
+import com.sajee.auth.enums.Role;
 
 import java.util.UUID;
 
@@ -10,7 +11,8 @@ public record RegisterResponse(
         String username,
         String email,
         String status,
-        boolean emailVerified
+        boolean emailVerified,
+        Role role
 ) {
 
     public static RegisterResponse from(Account account) {
@@ -19,7 +21,8 @@ public record RegisterResponse(
                 account.getUsername(),
                 account.getEmail(),
                 account.getStatus().name(),
-                account.isEmailVerified()
+                account.isEmailVerified(),
+                account.getRole()
         );
     }
 }
