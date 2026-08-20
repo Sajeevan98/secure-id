@@ -1,5 +1,6 @@
 package com.sajee.auth.security.config;
 
+import com.sajee.auth.email.EmailVerificationProperties;
 import com.sajee.auth.security.handler.RestAccessDeniedHandler;
 import com.sajee.auth.security.handler.RestAuthenticationEntryPoint;
 import com.sajee.auth.security.jwt.JwtAuthenticationConverter;
@@ -15,7 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, EmailVerificationProperties.class})
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
