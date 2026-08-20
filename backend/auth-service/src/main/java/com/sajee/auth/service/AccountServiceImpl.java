@@ -8,6 +8,7 @@ import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RegisterResponse;
 import com.sajee.auth.entity.Account;
 import com.sajee.auth.repository.AccountRepository;
+import com.sajee.auth.security.email.EmailVerificationService;
 import com.sajee.auth.security.jwt.JwtToken;
 import com.sajee.auth.security.jwt.JwtTokenService;
 import com.sajee.auth.security.login.LoginAttemptService;
@@ -34,6 +35,7 @@ public class AccountServiceImpl implements AccountService {
     private final LoginAttemptService loginAttemptService;
     private final JwtTokenService jwtTokenService;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationService emailVerificationService;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -61,10 +63,12 @@ public class AccountServiceImpl implements AccountService {
                 .build();
 
         Account registerAccount = accountRepository.save(account);
-
         log.debug("Registration successful for {}", request.email());
 
-        return RegisterResponse.from(registerAccount);
+        String verificationToken = emailVerificationService.create(registerAccount);
+        log.debug("Email verification token for {} {}:", request.email(), verificationToken);
+
+        return RegisterResponse.from(registerAccount, verificationToken);
     }
 
     @Override

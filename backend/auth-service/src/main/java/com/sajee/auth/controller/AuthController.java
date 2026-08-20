@@ -9,6 +9,7 @@ import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RefreshTokenResponse;
 import com.sajee.auth.dto.request.RefreshTokenRequest;
 import com.sajee.auth.dto.response.RegisterResponse;
+import com.sajee.auth.security.email.EmailVerificationService;
 import com.sajee.auth.security.refresh.RefreshTokenService;
 import com.sajee.auth.service.AccountService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ public class AuthController {
 
     private final AccountService accountService;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/registration")
     @ResponseStatus(HttpStatus.CREATED)
@@ -65,5 +67,16 @@ public class AuthController {
             @Valid @RequestBody LogoutRequest request
     ) {
         refreshTokenService.logout(request.refreshToken());
+    }
+
+    @GetMapping("/verify-email")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<String> verifyEmail(@RequestParam String token) {
+
+        emailVerificationService.verify(token);
+
+        return ApiResponse.success(
+                "Email verified successfully."
+        );
     }
 }

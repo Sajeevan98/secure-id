@@ -24,4 +24,4 @@ secureid:
 
   email:
     verification:
-      token-ttl: {EMAIL_VERIFICATION_TTL}
+      token-ttl: ${EMAIL_VERIFICATION_TTL}

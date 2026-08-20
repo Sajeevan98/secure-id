@@ -1,4 +1,4 @@
-package com.sajee.auth.email;
+package com.sajee.auth.security.email;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

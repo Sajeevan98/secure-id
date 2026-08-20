@@ -120,4 +120,8 @@ public class Account extends AuditableEntity {
     public void changeRole(Role role) {
         this.role = role;
     }
+
+    public void verifyEmail() {
+        this.emailVerified = true;
+    }
 }

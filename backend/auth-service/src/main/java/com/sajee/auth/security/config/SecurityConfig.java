@@ -1,6 +1,6 @@
 package com.sajee.auth.security.config;
 
-import com.sajee.auth.email.EmailVerificationProperties;
+import com.sajee.auth.security.email.EmailVerificationProperties;
 import com.sajee.auth.security.handler.RestAccessDeniedHandler;
 import com.sajee.auth.security.handler.RestAuthenticationEntryPoint;
 import com.sajee.auth.security.jwt.JwtAuthenticationConverter;
