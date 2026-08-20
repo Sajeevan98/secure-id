@@ -13,17 +13,19 @@ public record RegisterResponse(
         String email,
         String status,
         boolean emailVerified,
-        Role role
+        Role role,
+        String emailVerificationToken
 ) {
 
-    public static RegisterResponse from(Account account) {
+    public static RegisterResponse from(Account account, String emailVerificationToken) {
         return new RegisterResponse(
                 account.getUuid(),
                 account.getUsername(),
                 account.getEmail(),
                 account.getStatus().name(),
                 account.isEmailVerified(),
-                account.getRole()
+                account.getRole(),
+                emailVerificationToken
         );
     }
 }
