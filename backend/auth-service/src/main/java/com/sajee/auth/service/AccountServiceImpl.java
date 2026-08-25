@@ -4,10 +4,12 @@ import com.sajee.auth.common.exception.AuthenticationException;
 import com.sajee.auth.common.exception.ConflictException;
 import com.sajee.auth.dto.request.LoginRequest;
 import com.sajee.auth.dto.request.RegisterRequest;
+import com.sajee.auth.dto.request.ResendVerificationRequest;
 import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RegisterResponse;
 import com.sajee.auth.entity.Account;
 import com.sajee.auth.repository.AccountRepository;
+import com.sajee.auth.repository.EmailVerificationTokenRepository;
 import com.sajee.auth.security.email.EmailVerificationService;
 import com.sajee.auth.security.jwt.JwtToken;
 import com.sajee.auth.security.jwt.JwtTokenService;
@@ -36,6 +38,7 @@ public class AccountServiceImpl implements AccountService {
     private final JwtTokenService jwtTokenService;
     private final RefreshTokenService refreshTokenService;
     private final EmailVerificationService emailVerificationService;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -109,6 +112,25 @@ public class AccountServiceImpl implements AccountService {
                 .create(account, ipAddress, userAgent);
 
         return LoginResponse.from(accessToken, refreshToken);
+    }
+
+    @Override
+    public String resendVerification(ResendVerificationRequest request) {
+
+        Account account = accountRepository.findByEmail(request.email())
+                .orElseThrow(() -> new AuthenticationException(
+                        "AUTH_ACCOUNT_NOT_FOUND", "Account not found."
+                ));
+
+        if (account.isEmailVerified()) {
+            throw new AuthenticationException(
+                    "AUTH_EMAIL_ALREADY_VERIFIED", "Email is already verified."
+            );
+        }
+
+        emailVerificationTokenRepository.deleteAllByAccount(account);
+
+        return emailVerificationService.create(account);
     }
 
     // ========== Helper Methods ==========

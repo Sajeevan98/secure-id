@@ -5,6 +5,7 @@ import com.sajee.auth.common.api.ApiResponse;
 import com.sajee.auth.dto.request.LoginRequest;
 import com.sajee.auth.dto.request.LogoutRequest;
 import com.sajee.auth.dto.request.RegisterRequest;
+import com.sajee.auth.dto.request.ResendVerificationRequest;
 import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RefreshTokenResponse;
 import com.sajee.auth.dto.request.RefreshTokenRequest;
@@ -78,5 +79,15 @@ public class AuthController {
         return ApiResponse.success(
                 "Email verified successfully."
         );
+    }
+
+    @PostMapping("/resend-verification")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<String> resendVerification(
+            @Valid @RequestBody ResendVerificationRequest request) {
+
+        String token = accountService.resendVerification(request);
+
+        return ApiResponse.success(token);
     }
 }
