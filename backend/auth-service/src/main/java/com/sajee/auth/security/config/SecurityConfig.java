@@ -5,6 +5,7 @@ import com.sajee.auth.security.handler.RestAccessDeniedHandler;
 import com.sajee.auth.security.handler.RestAuthenticationEntryPoint;
 import com.sajee.auth.security.jwt.JwtAuthenticationConverter;
 import com.sajee.auth.security.jwt.JwtProperties;
+import com.sajee.auth.security.password.PasswordResetProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableConfigurationProperties({JwtProperties.class, EmailVerificationProperties.class})
+@EnableConfigurationProperties({
+        JwtProperties.class,
+        EmailVerificationProperties.class,
+        PasswordResetProperties.class
+})
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
