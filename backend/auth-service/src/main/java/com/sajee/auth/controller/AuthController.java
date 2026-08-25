@@ -2,10 +2,7 @@ package com.sajee.auth.controller;
 
 import com.sajee.auth.common.api.ApiEndpoints;
 import com.sajee.auth.common.api.ApiResponse;
-import com.sajee.auth.dto.request.LoginRequest;
-import com.sajee.auth.dto.request.LogoutRequest;
-import com.sajee.auth.dto.request.RegisterRequest;
-import com.sajee.auth.dto.request.ResendVerificationRequest;
+import com.sajee.auth.dto.request.*;
 import com.sajee.auth.dto.response.LoginResponse;
 import com.sajee.auth.dto.response.RefreshTokenResponse;
 import com.sajee.auth.dto.request.RefreshTokenRequest;
@@ -89,5 +86,23 @@ public class AuthController {
         String token = accountService.resendVerification(request);
 
         return ApiResponse.success(token);
+    }
+
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+
+        String token = accountService.forgotPassword(request);
+
+        return ApiResponse.success(token);
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+
+        accountService.resetPassword(request);
+
+        return ApiResponse.success("Password reset successfully.");
     }
 }

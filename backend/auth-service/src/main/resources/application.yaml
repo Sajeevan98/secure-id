@@ -25,3 +25,6 @@ secureid:
   email:
     verification:
       token-ttl: ${EMAIL_VERIFICATION_TTL}
+
+  password-reset:
+    token-ttl: ${PASSWORD_RESET_TTL}
