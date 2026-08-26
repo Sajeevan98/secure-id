@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert, Box, Button, Container, Paper, TextField, Typography } from '@mui/material';
 import { login } from '../api/authApi';
+import { tokenStorage } from '../storage/tokenStorage';
 
 function LoginPage() {
 
@@ -13,7 +14,7 @@ function LoginPage() {
     formState: { errors, isSubmitting },
 
   } = useForm({
-    defaultValues: { username: '', password: '' }
+    defaultValues: { email: '', password: '' }
   });
 
 
@@ -24,6 +25,12 @@ function LoginPage() {
     try {
 
       const response = await login(data);
+
+      tokenStorage.setTokens({
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+      });
+
       console.log('Login successful:', response);
 
     } catch (error) {
@@ -69,13 +76,14 @@ function LoginPage() {
           >
             <TextField
               fullWidth
-              label="Username"
+              label="Email"
+              type="email"
               margin="normal"
-              {...register('username', {
-                required: 'Username is required',
+              {...register('email', {
+                required: 'Email is required',
               })}
-              error={!!errors.username}
-              helperText={errors.username?.message}
+              error={!!errors.email}
+              helperText={errors.email?.message}
             />
 
             <TextField

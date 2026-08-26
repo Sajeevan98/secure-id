@@ -8,7 +8,7 @@ export const register = async (data) => {
 
 export const login = async (data) => {
 
-    const response = await axiosClientt.post('/auth/login', data);
+    const response = await axiosClient.post('/auth/login', data);
     return response.data;
 };
 
@@ -41,5 +41,11 @@ export const requestPasswordReset = async (email) => {
 export const resetPassword = async (data) => {
 
     const response = await axiosClient.post('/auth/reset-password', data);
+    return response.data;
+};
+
+export const getMyAccount = async () => {
+
+    const response = await axiosClient.get('/accounts/me');
     return response.data;
 };
