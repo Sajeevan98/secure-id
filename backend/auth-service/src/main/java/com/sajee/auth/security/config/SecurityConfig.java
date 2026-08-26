@@ -1,5 +1,6 @@
 package com.sajee.auth.security.config;
 
+import com.sajee.auth.security.cors.CorsProperties;
 import com.sajee.auth.security.email.EmailVerificationProperties;
 import com.sajee.auth.security.handler.RestAccessDeniedHandler;
 import com.sajee.auth.security.handler.RestAuthenticationEntryPoint;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,7 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableConfigurationProperties({
         JwtProperties.class,
         EmailVerificationProperties.class,
-        PasswordResetProperties.class
+        PasswordResetProperties.class,
+        CorsProperties.class
 })
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -35,6 +38,8 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+
+                .cors(Customizer.withDefaults())
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -28,3 +28,6 @@ secureid:
 
   password-reset:
     token-ttl: ${PASSWORD_RESET_TTL}
+
+  cors:
+    allowed-origin: ${FRONTEND_URL}
