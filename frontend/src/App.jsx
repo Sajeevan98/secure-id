@@ -1,11 +1,9 @@
+import { RouterProvider } from "react-router-dom"
+import router from "./routes/AppRouter"
+
 function App() {
 
-  return (
-    <div>
-      <h1>Secure ID</h1>
-      <p>Authentication platform</p>
-    </div>
-  );
+  return <RouterProvider router={router} />
 }
 
 export default App
