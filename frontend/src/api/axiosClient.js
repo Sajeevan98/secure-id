@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { tokenStorage } from '../storage/tokenStorage';
+import { notifyAuthFailure } from '../auth/authFailureHandler';
 
 const axiosClient = axios.create({
 
@@ -69,8 +70,9 @@ axiosClient.interceptors.response.use(
                 return axiosClient(originalRequest);
 
             } catch (refreshError) {
-                tokenStorage.clearTokens();
 
+                tokenStorage.clearTokens();
+                notifyAuthFailure();
                 return Promise.reject(refreshError);
             }
         }

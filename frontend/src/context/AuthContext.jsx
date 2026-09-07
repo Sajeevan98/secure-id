@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { tokenStorage } from "../storage/tokenStorage";
+import { setAuthFailureHandler } from "../auth/authFailureHandler";
 import {
     getMyAccount,
     login as loginApi,
@@ -35,9 +36,7 @@ export function AuthProvider({ children }) {
             } catch (error) {
 
                 console.error("Failed to restore authentication:", error);
-
                 tokenStorage.clearTokens();
-
                 setUser(null);
 
             } finally {
@@ -47,6 +46,19 @@ export function AuthProvider({ children }) {
         };
 
         restoreAuthentication();
+    }, []);
+
+    
+    useEffect(() => {
+
+        setAuthFailureHandler(() => {
+            tokenStorage.clearTokens();
+            setUser(null);
+        });
+
+        return () => {
+            setAuthFailureHandler(null);
+        };
     }, []);
 
 

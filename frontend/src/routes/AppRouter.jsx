@@ -4,7 +4,7 @@ import RegisterPage from '../pages/RegisterPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
-import ProtectedRoute from '../components/auth/ProtectedRoute';
+import ProtectedRoute from '../auth/ProtectedRoute';
 import HomePage from '../pages/HomePage';
 
 const router = createBrowserRouter([
