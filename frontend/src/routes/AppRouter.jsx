@@ -4,12 +4,18 @@ import RegisterPage from '../pages/RegisterPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
+import ProtectedRoute from '../components/auth/ProtectedRoute';
+import HomePage from '../pages/HomePage';
 
 const router = createBrowserRouter([
-
     {
-        path: '/',
-        element: <div>HOME</div>,
+        element: <ProtectedRoute />,
+        children: [
+            {
+                path: '/',
+                element: <HomePage />,
+            },
+        ],
     },
     {
         path: '/login',
@@ -30,8 +36,7 @@ const router = createBrowserRouter([
     {
         path: '/reset-password',
         element: <ResetPasswordPage />,
-    }
-    
+    },
 ]);
 
 export default router;
