@@ -49,3 +49,15 @@ export const getMyAccount = async () => {
     const response = await axiosClient.get('/accounts/me');
     return response.data;
 };
+
+export const logout = (refreshToken) => {
+    return axiosClient.post('/auth/logout', {
+        refreshToken,
+    });
+};
+
+export const refreshAccessToken = (refreshToken) => {
+    return axiosClient.post('/auth/refresh', {
+        refreshToken,
+    });
+};

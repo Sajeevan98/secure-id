@@ -1,10 +1,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getMyAccount, login as loginApi } from "../api/authApi";
 import { tokenStorage } from "../storage/tokenStorage";
+import {
+    getMyAccount,
+    login as loginApi,
+    logout as logoutApi,
+    refreshAccessToken
+} from "../api/authApi";
 
 
 const AuthContext = createContext(null);
-
 
 export function AuthProvider({ children }) {
 
@@ -68,11 +72,41 @@ export function AuthProvider({ children }) {
     };
 
 
-    const logout = () => {
+    const logout = async () => {
+        const refreshToken = tokenStorage.getRefreshToken();
 
-        tokenStorage.clearTokens();
+        try {
+            if (refreshToken) {
+                await logoutApi(refreshToken);
+            }
+        } catch (error) {
+            console.error("Backend logout failed:", error);
+        } finally {
+            tokenStorage.clearTokens();
+            setUser(null);
+        }
+    };
 
-        setUser(null);
+    const refresh = async () => {
+        const refreshToken = tokenStorage.getRefreshToken();
+
+        if (!refreshToken) {
+            throw new Error("Refresh token is not available");
+        }
+
+        const response = await refreshAccessToken(refreshToken);
+
+        const {
+            accessToken,
+            refreshToken: newRefreshToken
+        } = response.data;
+
+        tokenStorage.setTokens({
+            accessToken,
+            refreshToken: newRefreshToken
+        });
+
+        return accessToken;
     };
 
 
@@ -81,7 +115,8 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         loading,
         login,
-        logout
+        logout,
+        refresh
     };
 
     return (
