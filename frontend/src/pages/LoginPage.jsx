@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert, Box, Button, Container, Paper, TextField, Typography } from '@mui/material';
-import { login } from '../api/authApi';
-import { tokenStorage } from '../storage/tokenStorage';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
 
   const [serverError, setServerError] = useState('');
+
+  const { login } = useAuth();
+
+  const navigate = useNavigate();
 
   const {
     register,
@@ -19,23 +23,19 @@ function LoginPage() {
 
 
   const onSubmit = async (data) => {
-
     setServerError('');
 
     try {
 
-      const response = await login(data);
+      await login(data.email, data.password);
+      // console.log('Login successful');
 
-      tokenStorage.setTokens({
-        accessToken: response.data.accessToken,
-        refreshToken: response.data.refreshToken,
-      });
-
-      console.log('Login successful:', response);
+      navigate("/");
 
     } catch (error) {
 
       const message = error.response?.data?.error?.message || 'Unable to login. Please try again.';
+
       setServerError(message);
     }
   };
