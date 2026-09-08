@@ -152,7 +152,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public String forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(ForgotPasswordRequest request) {
 
         Account account = accountRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AuthenticationException(
@@ -163,7 +163,7 @@ public class AccountServiceImpl implements AccountService {
 
         log.debug("Password reset token created for account {}", account.getUuid());
 
-        return resetToken;
+        emailSender.sendPasswordResetEmail(account.getEmail(), resetToken);
     }
 
     @Override
@@ -180,6 +180,12 @@ public class AccountServiceImpl implements AccountService {
         passwordResetService.markUsed(token);
 
         log.debug("Password reset successfully for account {}", account.getUuid());
+    }
+
+    @Override
+    public void validatePasswordResetToken(String token) {
+
+        passwordResetService.validate(token);
     }
 
     // ========== Helper Methods ==========
