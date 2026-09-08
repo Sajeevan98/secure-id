@@ -10,7 +10,7 @@ public interface AccountService {
 
     LoginResponse login(LoginRequest request, String ipAddress, String userAgent);
 
-    String resendVerification(ResendVerificationRequest request);
+    void resendVerification(ResendVerificationRequest request);
 
     String forgotPassword(ForgotPasswordRequest request);
 

@@ -9,6 +9,7 @@ import com.sajee.auth.entity.Account;
 import com.sajee.auth.entity.PasswordResetToken;
 import com.sajee.auth.repository.AccountRepository;
 import com.sajee.auth.repository.EmailVerificationTokenRepository;
+import com.sajee.auth.security.email.EmailSender;
 import com.sajee.auth.security.email.EmailVerificationService;
 import com.sajee.auth.security.jwt.JwtToken;
 import com.sajee.auth.security.jwt.JwtTokenService;
@@ -40,6 +41,7 @@ public class AccountServiceImpl implements AccountService {
     private final EmailVerificationService emailVerificationService;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordResetService passwordResetService;
+    private final EmailSender emailSender;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -72,6 +74,9 @@ public class AccountServiceImpl implements AccountService {
         String verificationToken = emailVerificationService.create(registerAccount);
         log.debug("Email verification token for {} {}:", request.email(), verificationToken);
 
+        // send verify email
+        emailSender.sendVerificationEmail(registerAccount.getEmail(), verificationToken);
+
         return RegisterResponse.from(registerAccount, verificationToken);
     }
 
@@ -95,6 +100,11 @@ public class AccountServiceImpl implements AccountService {
             throw new AuthenticationException("AUTH_ACCOUNT_LOCKED", "Account is temporarily locked.");
         }
 
+        if (!account.isEmailVerified()) {
+            log.debug("{} email is not verified.", email);
+            throw new AuthenticationException("AUTH_EMAIL_NOT_VERIFIED", "Email address is not verified.");
+        }
+
         boolean passwordMatches = passwordService.matches(
                 request.password(),
                 account.getPasswordHash()
@@ -116,22 +126,29 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public String resendVerification(ResendVerificationRequest request) {
+    public void resendVerification(ResendVerificationRequest request) {
 
         Account account = accountRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AuthenticationException(
-                        "AUTH_ACCOUNT_NOT_FOUND", "Account not found."
+                        "AUTH_ACCOUNT_NOT_FOUND",
+                        "Account not found."
                 ));
 
         if (account.isEmailVerified()) {
             throw new AuthenticationException(
-                    "AUTH_EMAIL_ALREADY_VERIFIED", "Email is already verified."
+                    "AUTH_EMAIL_ALREADY_VERIFIED",
+                    "Email is already verified."
             );
         }
 
         emailVerificationTokenRepository.deleteAllByAccount(account);
 
-        return emailVerificationService.create(account);
+        String verificationToken = emailVerificationService.create(account);
+
+        emailSender.sendVerificationEmail(
+                account.getEmail(),
+                verificationToken
+        );
     }
 
     @Override

@@ -2,6 +2,18 @@ spring:
   application:
     name: auth-service
 
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
   jpa:
     open-in-view: false
     hibernate:

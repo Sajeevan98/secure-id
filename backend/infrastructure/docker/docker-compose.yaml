@@ -40,6 +40,15 @@ services:
     networks:
       - secure-id-network
 
+  # Duplicate/local email setup — Mailpit for development
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: secureid-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   postgres_data:
   pgadmin_data:
