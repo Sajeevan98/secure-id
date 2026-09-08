@@ -5,6 +5,7 @@ import com.sajee.auth.dto.request.RegisterRequest;
 import com.sajee.auth.dto.response.RegisterResponse;
 import com.sajee.auth.entity.Account;
 import com.sajee.auth.repository.AccountRepository;
+import com.sajee.auth.security.email.EmailSender;
 import com.sajee.auth.security.email.EmailVerificationService;
 import com.sajee.auth.service.AccountServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -28,6 +30,9 @@ public class AccountRegistrationServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private EmailSender emailSender;
 
     @InjectMocks
     private AccountServiceImpl accountService;

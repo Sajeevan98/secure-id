@@ -79,13 +79,11 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<String> resendVerification(
-            @Valid @RequestBody ResendVerificationRequest request) {
-
-        String token = accountService.resendVerification(request);
-
-        return ApiResponse.success(token);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resendVerification(
+            @Valid @RequestBody ResendVerificationRequest request
+    ) {
+        accountService.resendVerification(request);
     }
 
     @PostMapping("/forgot-password")
