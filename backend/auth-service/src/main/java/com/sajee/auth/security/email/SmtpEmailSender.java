@@ -34,4 +34,28 @@ public class SmtpEmailSender implements EmailSender {
 
         mailSender.send(message);
     }
+
+    @Override
+    public void sendPasswordResetEmail(String email, String resetToken) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setTo(email);
+        message.setSubject("Reset your SecureID password");
+
+        message.setText("""
+                We received a request to reset your SecureID password.
+                
+                Please use the following link to reset your password:
+                
+                http://localhost:5173/reset-password?token=%s
+                
+                This password reset link will expire according to the configured
+                password reset token lifetime.
+                
+                If you did not request a password reset, you can safely ignore this email.
+                """.formatted(resetToken));
+
+        mailSender.send(message);
+    }
 }

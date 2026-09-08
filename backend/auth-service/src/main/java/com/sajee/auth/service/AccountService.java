@@ -12,7 +12,9 @@ public interface AccountService {
 
     void resendVerification(ResendVerificationRequest request);
 
-    String forgotPassword(ForgotPasswordRequest request);
+    void forgotPassword(ForgotPasswordRequest request);
 
     void resetPassword(ResetPasswordRequest request);
+
+    void validatePasswordResetToken(String token);
 }

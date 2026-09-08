@@ -87,12 +87,11 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-
-        String token = accountService.forgotPassword(request);
-
-        return ApiResponse.success(token);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request
+    ) {
+        accountService.forgotPassword(request);
     }
 
     @PostMapping("/reset-password")
@@ -102,5 +101,12 @@ public class AuthController {
         accountService.resetPassword(request);
 
         return ApiResponse.success("Password reset successfully.");
+    }
+
+    @GetMapping("/reset-password/validate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void validatePasswordResetToken(@RequestParam String token) {
+
+        accountService.validatePasswordResetToken(token);
     }
 }
