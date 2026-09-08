@@ -174,6 +174,14 @@ function LoginPage() {
             >
               {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
+
+            <Button
+              variant="text"
+              onClick={() => navigate('/forgot-password')}
+              sx={{ mt: 1 }}
+            >
+              Forgot password?
+            </Button>
           </Box>
         </Paper>
       </Box>

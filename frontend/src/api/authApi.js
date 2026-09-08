@@ -44,6 +44,15 @@ export const resetPassword = async (data) => {
     return response.data;
 };
 
+export const validatePasswordResetToken = async (token) => {
+
+    const response = await axiosClient.get('/auth/reset-password/validate', {
+        params: { token },
+    });
+
+    return response.data;
+};
+
 export const getMyAccount = async () => {
 
     const response = await axiosClient.get('/accounts/me');
